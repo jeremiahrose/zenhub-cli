@@ -20,6 +20,15 @@ zh users                # List assignable users
 zh board                # Board overview
 zh pipeline "Name"      # Issues in a pipeline (with ZenHub URLs)
 
+# Sprints
+zh sprints                        # List open sprints (● = active)
+zh sprints --all                  # Include closed sprints
+zh sprint "Sprint 5"              # View sprint details and issues
+zh sprint current                 # View active sprint
+zh sprint-add <issue> "Sprint"    # Add issue to sprint
+zh sprint-add <issue> current     # Add issue to active sprint
+zh sprint-remove <issue> "Sprint" # Remove issue from sprint
+
 # Manage issues
 zh move <issue> "Pipeline"    # Move to pipeline
 zh reorder <issue> top        # Prioritize
@@ -33,6 +42,17 @@ zh reopen <issue>             # Reopen closed issue
 # Create issues
 zh create "Title" -t Bug -l "label1,label2" -e 3 -p "TO DO"
 
+# Issue type & hierarchy
+zh set-type <issue> Epic      # Set issue type
+zh set-type <issue> clear     # Remove issue type
+zh set-parent <issue> <parent>    # Make issue a sub-issue
+zh remove-parent <issue> <parent> # Remove parent relationship
+zh children <issue>           # List sub-issues
+
+# PR linking
+zh link <pr> <issue>          # Link a PR to an issue
+zh unlink <pr> <issue>        # Unlink a PR from an issue
+
 # Dependencies & priority
 zh block <blocked> <blocker>  # Set dependency
 zh unblock <blocked> <blocker> # Remove dependency
@@ -42,6 +62,19 @@ zh priority <issue> high      # Set priority
 zh types                # List issue types
 zh labels               # List labels
 zh pipelines            # List pipelines
+zh workspaces           # List available workspaces
+
+# Repo targeting (global -r flag, for running outside a git repo)
+zh -r "owner/repo" board            # Board without being in the repo directory
+zh -r "owner/repo" issue 42         # View issue from any directory
+zh -r "owner/repo" link 77 96       # Link PR to issue from anywhere
+
+# Workspace targeting (global -w flag)
+zh -w "Backend" board               # Board for a specific workspace
+zh -w "Backend" sprints             # Sprints in a specific workspace
+zh -w "Backend" sprint current      # Active sprint in a workspace
+zh -w "Backend" move 42 "Done"      # Move issue in a specific workspace
+zh -w "Backend" pipeline "TO DO"    # Pipeline in a specific workspace
 ```
 
 ### Important Patterns
@@ -51,6 +84,9 @@ zh pipelines            # List pipelines
 3. **Closed issues**: Use `--all` flag to include closed: `zh board --all`
 4. **ZenHub URLs**: Shown by default in `mine` and `pipeline`; use `--no-urls` to hide
 5. **Multi-repo workspaces**: Output shows repo name for each issue (issues may come from different repos)
+6. **Sprint names**: Case-insensitive; use `current` or `active` as alias for the active sprint
+7. **Workspace targeting**: Use `-w "Name"` before any command to target a specific workspace, or set `ZH_WORKSPACE` in config
+8. **Repo targeting**: Use `-r "owner/repo"` to run from any directory without needing a git checkout, or set `ZH_REPO` in config
 
 ## For AI Assistants
 
@@ -91,19 +127,20 @@ zh create "Login fails with special characters" \
 ```bash
 # Get overview
 zh board
+zh sprints
 
-# Review backlog
+# Review backlog and current sprint
 zh pipeline "Product Backlog"
+zh sprint current
 
-# Move items to sprint
+# Add items to sprint and move to pipeline
+zh sprint-add 123 current
+zh sprint-add 456 current
 zh move 123 "TO DO"
 zh move 456 "TO DO"
 
-# Prioritize
+# Prioritize and estimate
 zh reorder 123 top
-zh reorder 456 1
-
-# Estimate
 zh estimate 123 3
 zh estimate 456 5
 ```
@@ -146,6 +183,8 @@ The tool reads tokens from `~/.config/zh/config`:
 ```bash
 ZH_TOKEN=...        # GraphQL API token (most commands)
 ZH_REST_TOKEN=...   # REST API token (unblock command only)
+ZH_REPO=...         # Default owner/repo (optional, overrides git detection)
+ZH_WORKSPACE=...    # Default workspace name (optional, uses first found if unset)
 ```
 
 ## Development Notes
